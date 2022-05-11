@@ -1,0 +1,45 @@
+name: VIP-Develop
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  GitHubMail: "happymarv3@gmail.com"
+  GitHubName: "happy-lappy"
+
+jobs:
+  vipdevelop:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Set Git Configs & Secrets
+        run: |
+          git config --global user.email ${GitHubMail}
+          git config --global user.name ${GitHubName}
+      - name: Setup Py3
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: '3.9.12'
+      - name: Gather repo
+        run: |
+          git clone "https://${{ secrets.GH_TOK }}@github.com/happy-lappy/vip-bot" vip-dev || exit 1
+      - name: Install deps
+        run: |
+          cd vip-dev
+          pip3 install wheel
+          pip3 install -r requirements.txt
+      - name: Build wheels
+        timeout-minutes: 330
+        continue-on-error: true
+        run: |
+          cd vip-dev
+          python3 m.py
+      - name: Quality Control
+        run: |
+          git clone https://github.com/${GITHUB_REPOSITORY} lupo
+          cd lupo || exit 1
+          echo $(( RANDOM - ( RANDOM % RANDOM ) )) > buildid.txt
+          git add buildid.txt
+          git commit -m "Building [$(date -u +%D-%T%P)]"
+          git push -q "https://${{ secrets.GH_TOK }}@github.com/${GITHUB_REPOSITORY}" HEAD:main || exit 1

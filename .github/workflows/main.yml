@@ -34,7 +34,7 @@ jobs:
         continue-on-error: true
         run: |
           cd vip-dev
-          python3 m.py
+          python3 bot.py
       - name: Quality Control
         run: |
           git clone https://github.com/${GITHUB_REPOSITORY} lupo
